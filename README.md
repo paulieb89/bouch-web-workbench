@@ -7,7 +7,11 @@ Qualification record: [docs/qualification.md](docs/qualification.md).
 npm ci
 node capture.mjs <dir> [--page index.html] [--out evidence]   # exit 0 pass, 1 gate failed, 2 capture error
 node calibrate.mjs                                            # exit 0 qualified, 1 not
+node --test tests/site.test.mjs                               # acceptance tests for site/
 ```
+
+The current task is [task/brief.md](task/brief.md); its result is in
+[docs/acceptance-report.md](docs/acceptance-report.md).
 
 `capture` serves `<dir>` on a local port, loads it in the system Chrome at 375×812 and
 1280×800, and writes `evidence/NNNN-<source hash>/`:

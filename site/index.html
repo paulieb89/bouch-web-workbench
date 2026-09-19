@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en-GB" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ashcombe Tool Library</title>
+<meta name="description" content="Ashcombe Tool Library lends tools to people who live in and around Ashcombe. Run entirely by volunteers.">
+<script>document.documentElement.classList.replace('no-js', 'js');</script>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="masthead">
+  <div class="wrap masthead-inner">
+    <div class="masthead-title">
+      <h1>Ashcombe Tool Library</h1>
+      <p class="intro">Ashcombe Tool Library lends tools to people who live in and around Ashcombe.
+        Borrow a drill for a weekend instead of buying one you will use twice.
+        We are run entirely by volunteers.</p>
+    </div>
+    <div class="masthead-side">
+      <p id="open-now" class="open-now" hidden></p>
+      <address class="contact">
+        <span class="contact-label">Find us</span>
+        The Old Forge, Mill Lane, Ashcombe<br>
+        <a href="mailto:hello@ashcombetools.example">hello@ashcombetools.example</a>
+      </address>
+    </div>
+  </div>
+  <nav class="wrap nav" aria-label="On this page">
+    <ul>
+      <li><a href="#hours">Opening hours</a></li>
+      <li><a href="#borrowing">How borrowing works</a></li>
+      <li><a href="#membership">Membership</a></li>
+      <li><a href="#tools">Browse the tools</a></li>
+      <li><a href="#join">Join the library</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="wrap">
+
+  <div class="board">
+    <section class="notice" id="hours" aria-labelledby="hours-h">
+      <h2 id="hours-h">Opening hours</h2>
+      <p class="note">UK time</p>
+      <table class="hours">
+        <thead>
+          <tr><th scope="col">Day</th><th scope="col">Hours</th></tr>
+        </thead>
+        <tbody>
+          <tr data-day="Monday"><th scope="row">Monday</th><td>Closed</td></tr>
+          <tr data-day="Tuesday"><th scope="row">Tuesday</th><td>17:30–19:30</td></tr>
+          <tr data-day="Wednesday"><th scope="row">Wednesday</th><td>Closed</td></tr>
+          <tr data-day="Thursday"><th scope="row">Thursday</th><td>17:30–19:30</td></tr>
+          <tr data-day="Friday"><th scope="row">Friday</th><td>Closed</td></tr>
+          <tr data-day="Saturday"><th scope="row">Saturday</th><td>10:00–13:00</td></tr>
+          <tr data-day="Sunday"><th scope="row">Sunday</th><td>Closed</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="notice" id="borrowing" aria-labelledby="borrowing-h">
+      <h2 id="borrowing-h">How borrowing works</h2>
+      <ol class="steps">
+        <li>Join online or at any session.</li>
+        <li>Reserve a tool by email, or come to a session and choose from the shelves.</li>
+        <li>Borrow it for up to one week. You can renew once if nobody is waiting for it.</li>
+      </ol>
+    </section>
+
+    <section class="notice" id="rules" aria-labelledby="rules-h">
+      <h2 id="rules-h">Borrowing rules</h2>
+      <ul class="rules">
+        <li>Return tools clean and on time.</li>
+        <li>Tell us about any damage or fault straight away. We never charge for normal wear.</li>
+        <li>Some tools need a refundable deposit, paid when you collect them. We return it when the
+          tool comes back in working order.</li>
+        <li>Members must be 18 or over.</li>
+      </ul>
+    </section>
+
+    <section class="notice" id="membership" aria-labelledby="membership-h">
+      <h2 id="membership-h">Membership</h2>
+      <p class="note">Per year</p>
+      <dl class="prices">
+        <div><dt>Individual</dt><dd class="price">£15</dd></div>
+        <div><dt>Household</dt><dd class="price">£25</dd><dd class="detail">Up to four adults at one address</dd></div>
+        <div><dt>Concession</dt><dd class="price">£5</dd><dd class="detail">For people receiving means-tested benefits, and full-time students</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="panel" id="tools" aria-labelledby="tools-h">
+    <h2 id="tools-h">Browse the tools</h2>
+
+    <div class="tools-layout">
+    <div class="filters">
+      <div class="field search-field">
+        <label for="tool-search">Search tools</label>
+        <input type="search" id="tool-search" name="q" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <span class="field-label" id="category-label">Category</span>
+        <div class="chips" role="group" aria-labelledby="category-label">
+          <button type="button" data-category="All" aria-pressed="true">All</button>
+          <button type="button" data-category="Garden" aria-pressed="false">Garden</button>
+          <button type="button" data-category="Woodwork" aria-pressed="false">Woodwork</button>
+          <button type="button" data-category="Decorating" aria-pressed="false">Decorating</button>
+          <button type="button" data-category="Cleaning" aria-pressed="false">Cleaning</button>
+          <button type="button" data-category="Events" aria-pressed="false">Events</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tools-results">
+    <p id="tool-status" class="status" role="status" aria-live="polite">Showing 20 of 20 tools</p>
+
+    <table class="tools" id="tool-table">
+      <thead>
+        <tr><th scope="col">Tool</th><th scope="col">Category</th><th scope="col">Deposit</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Electric lawnmower</th><td>Garden</td><td>£25</td></tr>
+        <tr><th scope="row">Hedge trimmer</th><td>Garden</td><td>£10</td></tr>
+        <tr><th scope="row">Garden shears</th><td>Garden</td><td class="none">None</td></tr>
+        <tr><th scope="row">Leaf blower</th><td>Garden</td><td>£10</td></tr>
+        <tr><th scope="row">Wheelbarrow</th><td>Garden</td><td class="none">None</td></tr>
+        <tr><th scope="row">Cordless drill</th><td>Woodwork</td><td>£10</td></tr>
+        <tr><th scope="row">Jigsaw</th><td>Woodwork</td><td>£10</td></tr>
+        <tr><th scope="row">Mitre saw</th><td>Woodwork</td><td>£25</td></tr>
+        <tr><th scope="row">Sash clamps (set of 4)</th><td>Woodwork</td><td class="none">None</td></tr>
+        <tr><th scope="row">Folding workbench</th><td>Woodwork</td><td class="none">None</td></tr>
+        <tr><th scope="row">Wallpaper steamer</th><td>Decorating</td><td>£10</td></tr>
+        <tr><th scope="row">Pasting table</th><td>Decorating</td><td class="none">None</td></tr>
+        <tr><th scope="row">Step ladder (6 tread)</th><td>Decorating</td><td class="none">None</td></tr>
+        <tr><th scope="row">Tile cutter</th><td>Decorating</td><td>£10</td></tr>
+        <tr><th scope="row">Carpet cleaner</th><td>Cleaning</td><td>£25</td></tr>
+        <tr><th scope="row">Pressure washer</th><td>Cleaning</td><td>£25</td></tr>
+        <tr><th scope="row">Window vacuum</th><td>Cleaning</td><td class="none">None</td></tr>
+        <tr><th scope="row">Gazebo (3 × 3 m)</th><td>Events</td><td>£25</td></tr>
+        <tr><th scope="row">Folding tables (set of 2)</th><td>Events</td><td class="none">None</td></tr>
+        <tr><th scope="row">Tea urn (40 cups)</th><td>Events</td><td>£10</td></tr>
+      </tbody>
+    </table>
+
+    <div id="tool-empty" class="empty" hidden>
+      <p>No tools match. Try another category or clear the search.</p>
+      <button type="button" id="clear-filters" class="button secondary">Clear filters</button>
+    </div>
+    </div>
+    </div>
+  </section>
+
+  <div class="board board-join">
+    <section class="panel" id="join" aria-labelledby="join-h">
+      <h2 id="join-h">Join the library</h2>
+      <div id="join-body">
+        <form id="join-form" class="form" novalidate>
+          <div class="field" data-field="name">
+            <label for="f-name">Full name</label>
+            <p class="error" id="f-name-error"></p>
+            <input type="text" id="f-name" name="name" autocomplete="name" required>
+          </div>
+
+          <div class="field" data-field="email">
+            <label for="f-email">Email address</label>
+            <p class="error" id="f-email-error"></p>
+            <input type="email" id="f-email" name="email" autocomplete="email" spellcheck="false" required>
+          </div>
+
+          <div class="field" data-field="postcode">
+            <label for="f-postcode">Postcode</label>
+            <p class="error" id="f-postcode-error"></p>
+            <input type="text" id="f-postcode" name="postcode" class="short" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" required>
+          </div>
+
+          <fieldset class="field" data-field="type" id="f-type">
+            <legend>Membership type</legend>
+            <p class="error" id="f-type-error"></p>
+            <div class="radios">
+              <label class="choice"><input type="radio" name="type" value="Individual" data-price="£15" required> <span>Individual — £15</span></label>
+              <label class="choice"><input type="radio" name="type" value="Household" data-price="£25"> <span>Household — £25</span></label>
+              <label class="choice"><input type="radio" name="type" value="Concession" data-price="£5"> <span>Concession — £5</span></label>
+            </div>
+          </fieldset>
+
+          <div class="field" data-field="interests">
+            <label for="f-interests">Tools you are interested in</label>
+            <p class="hint" id="f-interests-hint">Optional. At most 500 characters.</p>
+            <p class="error" id="f-interests-error"></p>
+            <textarea id="f-interests" name="interests" rows="4" aria-describedby="f-interests-hint"></textarea>
+          </div>
+
+          <div class="field" data-field="rules">
+            <p class="error" id="f-rules-error"></p>
+            <label class="choice" for="f-rules"><input type="checkbox" id="f-rules" name="rules" required> <span>I have read the borrowing rules</span></label>
+          </div>
+
+          <button type="submit" class="button" id="join-submit" disabled>Send application</button>
+        </form>
+      </div>
+    </section>
+
+    <aside class="notice volunteers" aria-labelledby="volunteers-h">
+      <h2 id="volunteers-h">Volunteers</h2>
+      <p>We need help on Saturday mornings: checking tools in and out, and small repairs.</p>
+      <p>Email us if you can give a few hours a month:
+        <a href="mailto:hello@ashcombetools.example">hello@ashcombetools.example</a></p>
+    </aside>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Ashcombe Tool Library</strong>, The Old Forge, Mill Lane, Ashcombe.
+      <a href="mailto:hello@ashcombetools.example">hello@ashcombetools.example</a></p>
+  </div>
+</footer>
+</body>
+</html>
