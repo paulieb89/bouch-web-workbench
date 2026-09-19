@@ -1,0 +1,20 @@
+{
+  "name": "web-agent-workbench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "playwright": "1.63.0"
+  },
+  "bin": {
+    "capture": "capture.mjs"
+  },
+  "scripts": {
+    "capture": "node capture.mjs",
+    "calibrate": "node calibrate.mjs"
+  }
+}
