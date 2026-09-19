@@ -1,10 +1,12 @@
 <!doctype html>
-<!-- Calibration fixture: every defect here is planted on purpose. See calibration/expected.json. Do not fix. -->
+<!-- Calibration fixture: every defect here is planted on purpose. See calibration/expected.json. Do not fix.
+     The body asks for a named font no machine has (like "Inter" where it is not installed), so the
+     silent-fallback defect is planted everywhere. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Flowly</title>
 <style>
 @font-face{font-family:"Calibration Display";src:url(fonts/missing-display.woff2) format("woff2")}
-body{margin:0;font-family:Inter,system-ui,sans-serif;background:#0b0b0b;color:#eee}
+body{margin:0;font-family:"Workbench Uninstalled Sans",system-ui,sans-serif;background:#0b0b0b;color:#eee}
 .nav{position:sticky;top:0;height:64px;background:#111;display:flex;align-items:center;gap:16px;padding:0 24px;z-index:5}
 .hero{height:240px;padding:48px 24px;text-align:center;background:linear-gradient(135deg,#6d28d9,#db2777)}
 .hero h1{font-size:64px;line-height:1.1;margin:0}.hero h1 span{color:#a3e635}

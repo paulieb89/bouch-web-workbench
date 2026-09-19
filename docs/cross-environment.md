@@ -26,15 +26,9 @@ the development machine. The tag `v0-capture-qualified` and its evidence are unc
 
 ## Reproduction
 
-```sh
-IMG=mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
-docker volume create wb
-git ls-files -co --exclude-standard | tar -cf - -T - \
-  | docker run --rm -i -v wb:/work $IMG bash -c 'cd /work && tar -x && npm ci'
-docker run --rm --network=none -v wb:/work -w /work $IMG bash -c '
-  export WORKBENCH_CHROME=$(node -e "console.log(require(\"playwright\").chromium.executablePath())")
-  node calibrate.mjs && node --test tests/site.test.mjs && node capture.mjs site'
-```
+`scripts/reproduce.sh [revision]` runs this procedure for any committed revision (default `HEAD`)
+and prints `REPRODUCED` on success. Only `git archive` output enters the container, so uncommitted
+or ignored files cannot affect the result. It needs only git and Docker on the host.
 
 ## Results
 
@@ -110,10 +104,11 @@ expected:
   `--no-sandbox` by default (`chromiumSandbox: false`). So the qualified instrument has always run
   unsandboxed on the development machine. The positive control: with `chromiumSandbox: true` the
   flag is absent. The container uses the same default; that is inferred, not separately observed. The docs are corrected. Pages captured are only the locally served task pages.
-- **Fonts:** screenshots depend on the installed fonts. Neither the site's gates nor the clean
-  calibration page now need any particular font installed. One negative dependency remains: the
-  defects page's planted `Inter` fallback is detected only where Inter is not installed (true on
-  both machines here).
+- **Fonts:** screenshots depend on the installed fonts. Neither the site's gates nor either
+  calibration page need any particular font to be installed or absent. The defects page first
+  planted its silent-fallback defect by asking for `Inter`, so it was detected only where Inter
+  was not installed. With Inter installed in the container, calibration reported NOT QUALIFIED. The
+  page now asks for a family no machine has, and calibration is QUALIFIED with Inter installed.
 - **Not required:** host paths, Claude configuration, or network access after `npm ci`.
 
 ## Readiness for a frozen remote reference release

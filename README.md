@@ -49,5 +49,6 @@ Any Chromium works through `WORKBENCH_CHROME=/path/to/chrome`, including Playwri
 `WORKBENCH_CHROME=$(node -e "console.log(require('playwright').chromium.executablePath())")`.
 Playwright launches the browser without Chrome's sandbox (its default); captures only load the
 local page being served. Pixels depend on the browser build and the installed fonts; `fonts.json`
-records what rendered. Reproduction in the official Playwright container, and what differs there:
+records what rendered. `scripts/reproduce.sh [revision]` reproduces the qualification from committed source in the
+pinned official Playwright container; what differs there is in
 [docs/cross-environment.md](docs/cross-environment.md).

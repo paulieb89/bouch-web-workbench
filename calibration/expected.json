@@ -16,7 +16,7 @@
       { "id": "left-clip", "description": "Centred nowrap stats row clipped past the left edge", "detect": { "check": "overflow-left", "widths": [375], "where": { "element": "div.stat" } } },
       { "id": "hero-spill", "description": "Headline spills out of the fixed-height hero", "detect": { "check": "text-overflow", "widths": [375], "where": { "element": "section.hero", "detail": "spill" } } },
       { "id": "clipped-text", "description": "Fixed-width overflow:hidden badge cuts its text", "detect": { "check": "text-overflow", "where": { "element": "p.badge", "detail": "clipped" } } },
-      { "id": "inter-fallback", "description": "Inter requested but not installed; silently replaced", "detect": { "check": "font-fallback", "where": { "family": "Inter" } } },
+      { "id": "named-font-fallback", "description": "Named font requested but not installed; silently replaced", "detect": { "check": "font-fallback", "where": { "family": "Workbench Uninstalled Sans" } } },
       { "id": "webfont-fallback", "description": "@font-face family whose file 404s; silently replaced", "detect": { "check": "font-fallback", "where": { "family": "Calibration Display" } } },
       { "id": "tiny-target", "description": "18x18px icon button", "metric": { "name": "smallTargets", "contains": "button.btn" } },
       { "id": "gradient", "description": "Gradient hero", "metric": { "name": "gradients", "min": 1 } },

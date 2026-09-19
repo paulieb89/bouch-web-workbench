@@ -190,9 +190,9 @@ Build `capture` plus the calibration page, then qualify it. Every planted defect
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm i playwright@1.63.0 @axe-core/playwright@4.13.0
   ```
   Launch with `chromium.launch({channel:'chrome'})`, a context with `deviceScaleFactor:1` and `reducedMotion:'reduce'`, and attach listeners before `goto`.
-- The exploratory probe (`probe.mjs`, `tall.mjs` and the fixture pages) was left in the recon session's scratchpad
-  (`/tmp/claude-1000/-home-bch-experiments-webdev/1f4f9cc5-3a0f-4f29-a6a0-f14063b53e59/scratchpad/probe/`).
-  It may no longer exist. It can be inspected for implementation detail but is not canonical code; build the real calibration fixture from the findings above.
+- The exploratory probe (`probe.mjs`, `tall.mjs` and the fixture pages) was left in the recon session's
+  temporary scratchpad on the development machine and is not retained. It was not canonical code; the
+  real calibration fixture was built from the findings above.
 - **Chrome sandbox failure text:** `FATAL … No usable sandbox!`. The fix is to use the system Chrome, never `--no-sandbox`.
 - **`agent-browser` workaround:** set `AGENT_BROWSER_EXECUTABLE_PATH=/opt/google/chrome/chrome`.
 - The Bouch contract shapes to copy are `audio-agent-workbench-v2/CLAUDE.md`, `asset-workbench/CLAUDE.md` and `bouch-agent-core/references/candidate-evidence-pattern.md`. No Bouch repository was modified during recon.
