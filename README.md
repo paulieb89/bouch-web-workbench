@@ -31,8 +31,9 @@ The current task is [task/brief.md](task/brief.md); its result is in
 
 **Gates** (any one fails the run, at either width): console errors, page errors, failed or
 ≥400 requests, serious/critical axe violations, horizontal overflow (page scroll width or an
-element past the left or right edge), a text element for which none of the named families in
-its `font-family` stack rendered.
+element past the left or right edge), a text element for which none of the named families before
+its `font-family` stack's first generic (`serif`, `sans-serif`, `monospace`, `cursive`, `fantasy`,
+`system-ui`) rendered. Families after that generic are never reached, so they are not required.
 
 **Reported, not gated:** moderate/minor axe violations, content overflowing its own box
 (`text-overflow`: clipped or spilling), design metrics. The screenshots remain the authority for
@@ -43,6 +44,10 @@ no findings at all. `calibration/expected.json` lists every planted defect and t
 must detect it (or marks it judgement-only). `calibrate` captures each fixture twice and also
 requires byte-identical screenshots across the two runs. Do not fix the defects fixture.
 
-**Machine bindings.** The browser is the system Chrome (`channel: 'chrome'`); downloaded Chrome
-builds fail the AppArmor sandbox here. Override with `WORKBENCH_CHROME=/path/to/chrome`; never
-use `--no-sandbox`. Pixels depend on the installed fonts; `fonts.json` records what rendered.
+**Machine bindings.** The browser defaults to the installed Google Chrome (`channel: 'chrome'`).
+Any Chromium works through `WORKBENCH_CHROME=/path/to/chrome`, including Playwright's own build:
+`WORKBENCH_CHROME=$(node -e "console.log(require('playwright').chromium.executablePath())")`.
+Playwright launches the browser without Chrome's sandbox (its default); captures only load the
+local page being served. Pixels depend on the browser build and the installed fonts; `fonts.json`
+records what rendered. Reproduction in the official Playwright container, and what differs there:
+[docs/cross-environment.md](docs/cross-environment.md).

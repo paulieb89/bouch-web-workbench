@@ -30,13 +30,15 @@ diagnostic, not targets. A human decides final design quality.
 
 ## The instrument
 
-`capture.mjs`, `calibrate.mjs` and `calibration/` are qualified at tag `v0-capture-qualified`;
-see [docs/qualification.md](docs/qualification.md). Do not change them to make a page pass.
+`capture.mjs`, `calibrate.mjs` and `calibration/` were qualified at tag `v0-capture-qualified`
+and revised once, with regression coverage, in
+[docs/cross-environment.md](docs/cross-environment.md); see also
+[docs/qualification.md](docs/qualification.md). Do not change them to make a page pass.
 If you suspect the instrument is wrong, keep the evidence, run `node calibrate.mjs` (it must
 report QUALIFIED), and report the suspected defect separately from site defects.
 
-The browser is the system Chrome. Downloaded Chrome builds fail the sandbox on this machine:
-set `WORKBENCH_CHROME` to use another path, and never use `--no-sandbox`.
+The browser defaults to the installed Google Chrome; set `WORKBENCH_CHROME` to use another
+Chromium (see the README). Rendering depends on the browser build and installed fonts.
 `evidence/` is gitignored; cite run ids rather than committing captures.
 
 Choose the stack, libraries and other capabilities the task justifies. The brief allows no

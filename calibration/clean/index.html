@@ -1,5 +1,7 @@
 <!doctype html>
-<!-- Calibration fixture: restrained page that must capture with no findings. See calibration/expected.json. -->
+<!-- Calibration fixture: restrained page that must capture with no findings. See calibration/expected.json.
+     Uses no installed named font: headings miss Georgia and fall to the shipped web font; the footer
+     stack starts with the generic system-ui, so the absent family after it is never requested. -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Harbour Lane Bakery</title>
 <style>
@@ -7,7 +9,7 @@
 :root{--ink:#1d2327;--paper:#fbfaf7;--rule:#d9d4c7;--accent:#2f5d50}
 body{margin:0;font:18px/1.6 "Workbench Fixture Sans",system-ui,sans-serif;color:var(--ink);background:var(--paper)}
 main{max-width:40rem;margin:0 auto;padding:3rem 1.25rem}
-h1,h2{font-family:Georgia,"DejaVu Serif",serif;line-height:1.15}
+h1,h2{font-family:Georgia,"Workbench Fixture Sans",serif;line-height:1.15}
 h1{font-size:2.4rem;margin:0 0 1rem}
 h2{font-size:1.4rem;margin:2.5rem 0 .75rem}
 table{border-collapse:collapse;width:100%}
@@ -15,7 +17,7 @@ th,td{border-top:1px solid var(--rule);padding:.5rem 0;text-align:left;font-weig
 td{text-align:right}
 a{color:var(--accent)}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1rem;font-size:.9rem}
+footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1rem;font-size:.9rem;font-family:system-ui,"Workbench Absent Family",sans-serif}
 </style></head><body><main>
 <h1>Harbour Lane Bakery</h1>
 <p>Sourdough, rye and seasonal bakes from a wood-fired oven on Harbour Lane. We open at seven and close when the bread runs out.</p>

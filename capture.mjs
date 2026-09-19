@@ -128,9 +128,16 @@ function inspectPage() {
 
 const GENERIC = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui', 'ui-serif', 'ui-sans-serif',
   'ui-monospace', 'ui-rounded', 'emoji', 'math', 'fangsong', '-apple-system', 'blinkmacsystemfont']);
+// Generics Chrome always resolves: families listed after one of these are never reached.
+const TERMINAL = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui']);
 const parseStack = (s) => s.split(',').map((f) => f.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+const requestedFamilies = (stack) => {
+  const fams = parseStack(stack);
+  const end = fams.findIndex((f) => TERMINAL.has(f.toLowerCase()));
+  return (end < 0 ? fams : fams.slice(0, end)).filter((f) => !GENERIC.has(f.toLowerCase()));
+};
 
-// A text element fails when none of the named (non-generic) families in its stack actually rendered its text.
+// A text element fails when none of the named families before its stack's first resolving generic rendered its text.
 async function checkFonts(page, info) {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
@@ -140,7 +147,7 @@ async function checkFonts(page, info) {
   const byStack = new Map();
   for (const t of info.textElements) {
     const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId: nodeIds[t.i] });
-    const named = parseStack(t.stack).filter((f) => !GENERIC.has(f.toLowerCase()));
+    const named = requestedFamilies(t.stack);
     const satisfied = named.some((f) => {
       const declared = faces.filter((x) => x.family.toLowerCase() === f.toLowerCase());
       if (declared.length) return declared.some((x) => x.status === 'loaded') && fonts.some((p) => p.isCustomFont);

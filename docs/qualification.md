@@ -1,7 +1,9 @@
 # Web Agent Workbench V0 — capture qualification
 
 Date: 2026-09-19
-Status: observed local evidence
+Status: observed local evidence. Two statements here were revised after the cross-environment
+run (the font-fallback rule and the clean fixture's heading font): see
+[cross-environment.md](cross-environment.md).
 Scope: `capture.mjs` and `calibrate.mjs` on this machine only. Container qualification and
 the control-vs-candidate experiment ([reconnaissance.md §7, §9](reconnaissance.md)) are not
 covered here.

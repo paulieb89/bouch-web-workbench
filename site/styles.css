@@ -1,4 +1,11 @@
-/* Ashcombe Tool Library. System fonts only; no external requests. */
+/* Ashcombe Tool Library. System fonts, with a shipped heading fallback; no external requests. */
+/* Only downloaded where no earlier heading font is installed. Licence: fonts/OFL-NotoSerif.txt */
+@font-face {
+  font-family: "Ashcombe Serif";
+  src: url(fonts/noto-serif-bold-latin.woff) format("woff");
+  font-weight: 700;
+  font-display: block;
+}
 :root {
   --paper: #f3eee3;
   --card: #fffdf8;
@@ -11,7 +18,7 @@
   --today: #fbe9a8;
   --error: #b3261e;
   --focus: #1a5fb4;
-  --serif: Charter, "Sitka Text", Cambria, Georgia, "Noto Serif", "DejaVu Serif", serif;
+  --serif: Charter, "Sitka Text", Cambria, Georgia, "Noto Serif", "DejaVu Serif", "Ashcombe Serif", serif;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
