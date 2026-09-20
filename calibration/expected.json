@@ -3,28 +3,245 @@
     "dir": "calibration/defects",
     "expectPass": false,
     "planted": [
-      { "id": "js-exception", "description": "Script throws ReferenceError on load", "detect": { "check": "page-error", "where": { "detail": "undefinedThing" } } },
-      { "id": "console-error", "description": "Script logs console.error", "detect": { "check": "console-error", "where": { "detail": "planted console error" } } },
-      { "id": "missing-image", "description": "Image src returns 404", "detect": { "check": "failed-request", "where": { "detail": "missing-hero.png" } } },
-      { "id": "missing-webfont-file", "description": "@font-face src returns 404", "detect": { "check": "failed-request", "where": { "detail": "missing-display.woff2" } } },
-      { "id": "unnamed-button", "description": "Icon button with no accessible name", "detect": { "check": "axe", "where": { "rule": "button-name" } } },
-      { "id": "low-contrast", "description": "#3a3a3a text on #1a1a1a cards", "detect": { "check": "axe", "where": { "rule": "color-contrast" } } },
-      { "id": "heading-skip", "description": "h1 followed directly by h4", "detect": { "check": "axe", "where": { "rule": "heading-order" } } },
-      { "id": "no-main", "description": "No main landmark", "detect": { "check": "axe", "where": { "rule": "landmark-one-main" } } },
-      { "id": "page-overflow", "description": "1100px-wide section on a 375px screen", "detect": { "check": "overflow-x", "widths": [375] } },
-      { "id": "wide-section", "description": "The offending wide section is named", "detect": { "check": "overflow-right", "widths": [375], "where": { "element": "section.wide" } } },
-      { "id": "left-clip", "description": "Centred nowrap stats row clipped past the left edge", "detect": { "check": "overflow-left", "widths": [375], "where": { "element": "div.stat" } } },
-      { "id": "hero-spill", "description": "Headline spills out of the fixed-height hero", "detect": { "check": "text-overflow", "widths": [375], "where": { "element": "section.hero", "detail": "spill" } } },
-      { "id": "clipped-text", "description": "Fixed-width overflow:hidden badge cuts its text", "detect": { "check": "text-overflow", "where": { "element": "p.badge", "detail": "clipped" } } },
-      { "id": "named-font-fallback", "description": "Named font requested but not installed; silently replaced", "detect": { "check": "font-fallback", "where": { "family": "Workbench Uninstalled Sans" } } },
-      { "id": "webfont-fallback", "description": "@font-face family whose file 404s; silently replaced", "detect": { "check": "font-fallback", "where": { "family": "Calibration Display" } } },
-      { "id": "tiny-target", "description": "18x18px icon button", "metric": { "name": "smallTargets", "contains": "button.btn" } },
-      { "id": "gradient", "description": "Gradient hero", "metric": { "name": "gradients", "min": 1 } },
-      { "id": "cards", "description": "Rounded, shadowed cards", "metric": { "name": "cardLike", "min": 3 } },
-      { "id": "tracked-caps", "description": "Spaced-out uppercase eyebrow", "metric": { "name": "uppercaseTracked", "min": 1 } },
-      { "id": "invented-content", "description": "Invented metrics (10,000+, 99.9%, 5x) and testimonial", "detect": null, "note": "judgement only" },
-      { "id": "accent-word", "description": "One accent-coloured word in the headline", "detect": null, "note": "judgement only" },
-      { "id": "numbered-labels", "description": "01/02/03 feature labels", "detect": null, "note": "judgement only" }
+      {
+        "id": "js-exception",
+        "description": "Script throws ReferenceError on load",
+        "detect": {
+          "check": "page-error",
+          "where": {
+            "detail": "undefinedThing"
+          }
+        }
+      },
+      {
+        "id": "console-error",
+        "description": "Script logs console.error",
+        "detect": {
+          "check": "console-error",
+          "where": {
+            "detail": "planted console error"
+          }
+        }
+      },
+      {
+        "id": "missing-image",
+        "description": "Image src returns 404",
+        "detect": {
+          "check": "failed-request",
+          "where": {
+            "detail": "missing-hero.png"
+          }
+        }
+      },
+      {
+        "id": "missing-webfont-file",
+        "description": "@font-face src returns 404",
+        "detect": {
+          "check": "failed-request",
+          "where": {
+            "detail": "missing-display.woff2"
+          }
+        }
+      },
+      {
+        "id": "unnamed-button",
+        "description": "Icon button with no accessible name",
+        "detect": {
+          "check": "axe",
+          "where": {
+            "rule": "button-name"
+          }
+        }
+      },
+      {
+        "id": "low-contrast",
+        "description": "#3a3a3a text on #1a1a1a cards",
+        "detect": {
+          "check": "axe",
+          "where": {
+            "rule": "color-contrast"
+          }
+        }
+      },
+      {
+        "id": "heading-skip",
+        "description": "h1 followed directly by h4",
+        "detect": {
+          "check": "axe",
+          "where": {
+            "rule": "heading-order"
+          }
+        }
+      },
+      {
+        "id": "no-main",
+        "description": "No main landmark",
+        "detect": {
+          "check": "axe",
+          "where": {
+            "rule": "landmark-one-main"
+          }
+        }
+      },
+      {
+        "id": "page-overflow",
+        "description": "1100px-wide section on a 375px screen",
+        "detect": {
+          "check": "overflow-x",
+          "widths": [
+            375
+          ]
+        }
+      },
+      {
+        "id": "wide-section",
+        "description": "The offending wide section is named",
+        "detect": {
+          "check": "overflow-right",
+          "widths": [
+            375
+          ],
+          "where": {
+            "element": "section.wide"
+          }
+        }
+      },
+      {
+        "id": "left-clip",
+        "description": "Centred nowrap stats row clipped past the left edge",
+        "detect": {
+          "check": "overflow-left",
+          "widths": [
+            375
+          ],
+          "where": {
+            "element": "div.stat"
+          }
+        }
+      },
+      {
+        "id": "hero-spill",
+        "description": "Headline spills out of the fixed-height hero",
+        "detect": {
+          "check": "text-overflow",
+          "widths": [
+            375
+          ],
+          "where": {
+            "element": "section.hero",
+            "detail": "spill"
+          }
+        }
+      },
+      {
+        "id": "clipped-text",
+        "description": "Fixed-width overflow:hidden badge cuts its text",
+        "detect": {
+          "check": "text-overflow",
+          "where": {
+            "element": "p.badge",
+            "detail": "clipped"
+          }
+        }
+      },
+      {
+        "id": "named-font-fallback",
+        "description": "Named font requested but not installed; silently replaced",
+        "detect": {
+          "check": "font-fallback",
+          "where": {
+            "family": "Workbench Uninstalled Sans"
+          }
+        }
+      },
+      {
+        "id": "webfont-fallback",
+        "description": "@font-face family whose file 404s; silently replaced",
+        "detect": {
+          "check": "font-fallback",
+          "where": {
+            "family": "Calibration Display"
+          }
+        }
+      },
+      {
+        "id": "state-overflow",
+        "description": "Error banner revealed only after submit is 640px wide and never wraps",
+        "detect": {
+          "check": "overflow-right",
+          "widths": [
+            375
+          ],
+          "where": {
+            "state": "error",
+            "element": "p.err"
+          }
+        }
+      },
+      {
+        "id": "state-console-error",
+        "description": "Submit handler logs a console error that does not exist at rest",
+        "detect": {
+          "check": "console-error",
+          "where": {
+            "state": "error",
+            "detail": "planted state console error"
+          }
+        }
+      },
+      {
+        "id": "tiny-target",
+        "description": "18x18px icon button",
+        "metric": {
+          "name": "smallTargets",
+          "contains": "button.btn"
+        }
+      },
+      {
+        "id": "gradient",
+        "description": "Gradient hero",
+        "metric": {
+          "name": "gradients",
+          "min": 1
+        }
+      },
+      {
+        "id": "cards",
+        "description": "Rounded, shadowed cards",
+        "metric": {
+          "name": "cardLike",
+          "min": 3
+        }
+      },
+      {
+        "id": "tracked-caps",
+        "description": "Spaced-out uppercase eyebrow",
+        "metric": {
+          "name": "uppercaseTracked",
+          "min": 1
+        }
+      },
+      {
+        "id": "invented-content",
+        "description": "Invented metrics (10,000+, 99.9%, 5x) and testimonial",
+        "detect": null,
+        "note": "judgement only"
+      },
+      {
+        "id": "accent-word",
+        "description": "One accent-coloured word in the headline",
+        "detect": null,
+        "note": "judgement only"
+      },
+      {
+        "id": "numbered-labels",
+        "description": "01/02/03 feature labels",
+        "detect": null,
+        "note": "judgement only"
+      }
+    ],
+    "states": [
+      "error"
     ]
   },
   "clean": {
@@ -32,10 +249,26 @@
     "expectPass": true,
     "maxFindings": 0,
     "metrics": [
-      { "name": "gradients", "max": 0 },
-      { "name": "cardLike", "max": 0 },
-      { "name": "uppercaseTracked", "max": 0 },
-      { "name": "smallTargets", "max": 0 }
+      {
+        "name": "gradients",
+        "max": 0
+      },
+      {
+        "name": "cardLike",
+        "max": 0
+      },
+      {
+        "name": "uppercaseTracked",
+        "max": 0
+      },
+      {
+        "name": "smallTargets",
+        "max": 0
+      }
+    ],
+    "states": [
+      "reserved",
+      "focus"
     ]
   }
 }

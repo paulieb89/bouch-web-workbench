@@ -1,0 +1,18 @@
+{
+  "states": [
+    {
+      "name": "reserved",
+      "description": "Order form filled and submitted; the confirmation is revealed",
+      "actions": [
+        { "fill": { "label": "How many loaves?" }, "value": "2" },
+        { "click": { "role": "button", "name": "Reserve" } },
+        { "waitFor": { "text": "Reserved" } }
+      ]
+    },
+    {
+      "name": "focus",
+      "description": "Keyboard focus ring on the order field",
+      "actions": [ { "focus": { "label": "How many loaves?" } } ]
+    }
+  ]
+}

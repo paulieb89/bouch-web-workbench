@@ -6,6 +6,7 @@ Qualification record: [docs/qualification.md](docs/qualification.md).
 ```sh
 npm ci
 node capture.mjs <dir> [--page index.html] [--out evidence]   # exit 0 pass, 1 gate failed, 2 capture error
+node capture.mjs <dir> --states states.json | --no-states       # also capture declared interaction states
 node calibrate.mjs                                            # exit 0 qualified, 1 not
 node --test tests/site.test.mjs                               # acceptance tests for site/
 ```
@@ -28,6 +29,8 @@ The current task is [task/brief.md](task/brief.md); its result is in
 | `<width>/layout.json` | page overflow, elements past either edge, content overflowing its box |
 | `<width>/fonts.json` | per font stack: requested families, the fonts that actually rendered, `@font-face` status |
 | `<width>/metrics.json` | design metrics — reported, never gated |
+| `<width>/states/<name>.png` | full-page screenshot of each declared interaction state |
+| `<width>/states.json` | per state: layout, axe violations, console and requests |
 
 **Gates** (any one fails the run, at either width): console errors, page errors, failed or
 ≥400 requests, serious/critical axe violations, horizontal overflow (page scroll width or an
@@ -38,6 +41,31 @@ its `font-family` stack's first generic (`serif`, `sans-serif`, `monospace`, `cu
 **Reported, not gated:** moderate/minor axe violations, content overflowing its own box
 (`text-overflow`: clipped or spilling), design metrics. The screenshots remain the authority for
 what the page looks like; the agent must read the tiles.
+
+## Interaction states
+
+A page at rest is not the whole page. A defect can exist only once a form is filled, an option
+chosen, or an error shown. Declare those states and the same gates run again in each one:
+
+```json
+{ "states": [
+  { "name": "error", "description": "Out-of-range dose shows the field error",
+    "actions": [ { "fill": { "label": "Coffee (grams)" }, "value": "150" },
+                 { "focus": { "label": "Coffee (grams)" } } ] } ] }
+```
+
+`capture` reads `<dir>/states.json` when it exists, or `--states <file>` from anywhere — keep the
+spec outside the served directory if it should not ship with the site. `--no-states` skips them.
+
+A state is **data, not code**: each action names its target one way (`label`, `role` + `name`,
+`text` or `selector`) and uses one allowlisted verb (`fill`, `click`, `check`, `uncheck`, `focus`,
+`hover`, `press`, `waitFor`). A malformed spec, or an action whose target never appears, exits 2
+with the reason — it is never silently skipped.
+
+Each state loads the page fresh, so its console, requests and errors are its own. Findings from a
+state carry `"state": "<name>"` and gate the run exactly as at-rest findings do. A state repeats
+any defect that is already present at rest; that is the same page, judged again in a new state,
+not a new fault.
 
 **Calibration.** `calibration/defects/` plants known defects; `calibration/clean/` must produce
 no findings at all. `calibration/expected.json` lists every planted defect and the finding that

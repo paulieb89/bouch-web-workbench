@@ -26,7 +26,18 @@ function checkMetric(summaryDir, spec, label) {
   }
 }
 
+function checkStates(name, exp, summary) {
+  const got = (summary.states?.names ?? []).join(', ');
+  const want = (exp.states ?? []).join(', ');
+  if (got !== want) fail(`${name}: captured states [${got}], expected [${want}]`);
+  for (const v of summary.viewports) {
+    const shots = (v.states ?? []).map((s) => s.name).join(', ');
+    if (shots !== want) fail(`${name}: state screenshots at ${v.width} [${shots}], expected [${want}]`);
+  }
+}
+
 function evaluate(name, exp, { runDir, summary }) {
+  checkStates(name, exp, summary);
   console.log(`${name} run ${summary.run}: ${summary.pass ? 'PASS' : 'FAIL'}, ${summary.findings.length} findings`);
   if (summary.pass !== exp.expectPass) fail(`${name}: gates ${summary.pass ? 'passed' : 'failed'}, expected ${exp.expectPass ? 'pass' : 'fail'}`);
   const matched = new Set();
@@ -50,8 +61,15 @@ function evaluate(name, exp, { runDir, summary }) {
   if (judgement.length) console.log(`  judgement only, not machine-checked: ${judgement.map((p) => p.id).join(', ')}`);
 }
 
-const pngHashes = (dir) => Object.fromEntries(WIDTHS.flatMap((w) => fs.readdirSync(path.join(dir, String(w)))
-  .filter((f) => f.endsWith('.png')).map((f) => [`${w}/${f}`, crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, String(w), f))).digest('hex')])));
+// Every screenshot, at rest and per state, must be byte-identical across runs: a state
+// capture that is not reproducible is not evidence.
+const pngsIn = (dir, prefix) => (fs.existsSync(dir) ? fs.readdirSync(dir) : [])
+  .filter((f) => f.endsWith('.png'))
+  .map((f) => [`${prefix}${f}`, crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, f))).digest('hex')]);
+const pngHashes = (dir) => Object.fromEntries(WIDTHS.flatMap((w) => [
+  ...pngsIn(path.join(dir, String(w)), `${w}/`),
+  ...pngsIn(path.join(dir, String(w), 'states'), `${w}/states/`),
+]));
 
 const report = { created: new Date().toISOString(), fixtures: {} };
 for (const [name, exp] of Object.entries(expected)) {

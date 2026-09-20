@@ -80,3 +80,41 @@ fully readable, and the planted clipping and spill are visible.
 - Whether screenshots match across machines or inside `mcr.microsoft.com/playwright:v1.63.0-noble`.
 - How noisy `text-overflow` and the metrics are on pages other than these two fixtures.
 - Whether any of this improves agent output. That is the experiment's question.
+
+## Interaction states (v0.2.0, 2026-09-20)
+
+Added because a real consumer hit the limit: `web-test-temp` used the workbench unmodified and
+wrote its own `scripts/states.mjs`, because the at-rest capture could not produce screenshots of
+a filled result or a field in error.
+
+Both fixtures now declare states, so the pass is exercised in the qualified and the defective
+direction at once.
+
+| Planted, state-only | Detected as |
+|---|---|
+| Error banner revealed only after submit, 640px wide and `nowrap` | `overflow-right` on `p.err` at 375, state `error` |
+| Console error logged only by the submit handler | `console-error` at both widths, state `error` |
+
+Neither fault exists at rest: the same fixture passes those two checks until the form is
+submitted. The clean fixture declares `reserved` and `focus` and still captures with **0
+findings**, so the state pass invents nothing.
+
+`node calibrate.mjs`: **QUALIFIED (0 problems)**. Screenshots byte-identical across two
+consecutive runs — 11 per clean run and 8 per defects run, now including every
+`states/<name>.png`, since a state capture that is not reproducible is not evidence.
+
+**The calibrator can still fail (control).** A copy with the state pass disabled
+(`for (const s of [])`) reported **NOT QUALIFIED, 14 problems**: both planted state defects
+missed at each width they are expected at, plus the missing state screenshots at both widths.
+
+**Spec errors are usage errors.** A state with no actions, a target named two ways at once, an
+unknown verb, malformed JSON, a missing spec file, and an action whose target never appears each
+exit 2 with the reason on one line, rather than being skipped.
+
+**Unchanged at rest.** A directory with no `states.json` behaves exactly as before:
+`node capture.mjs site` PASS, `node --test tests/site.test.mjs` 13/13.
+
+**Consumer check (not a release gate).** The consumer's two states, expressed as a spec kept
+outside the served directory, captured against its real site through this instrument: PASS, with
+`result` and `error` at both widths, and the 375 error screenshot shows the dose, the validation
+message and the focus ring that its own script produced.

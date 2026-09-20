@@ -19,8 +19,11 @@ browser output is the authority.
 - Capture after each meaningful change. Read `summary.json`, then open the tiles
   (`<width>/tile-NN.png`) at both widths with Read. Use `full.png` for overall layout only:
   tall pages are downscaled and their text is unreadable.
-- The capture shows the page at rest. Interactions, states and other viewports need their
-  own checks in the real browser; the pinned `playwright` package is installed.
+- The capture shows the page at rest, plus any interaction states declared in `states.json`
+  (see the README); those are captured and gated the same way, and their screenshots
+  (`<width>/states/<name>.png`) must be read like the tiles. Anything a declared state cannot
+  express — other viewports, multi-page flows, timing — still needs its own check in the real
+  browser; the pinned `playwright` package is installed.
 - Before claiming completion, the capture must pass, you must have read the tiles at both
   widths, and you must write a short critique of what you saw, including what you fixed.
 

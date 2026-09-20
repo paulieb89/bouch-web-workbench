@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 // Capture a static page at 375 and 1280 wide and write evidence/<run>/.
-// Usage: node capture.mjs <dir> [--page index.html] [--out evidence]
+// Usage: node capture.mjs <dir> [--page index.html] [--out evidence] [--states file|--no-states]
 // Exit: 0 all gates pass, 1 a gate failed, 2 capture error.
+//
+// States: a page at rest is not the whole page. A declared state drives the page
+// through an allowlisted action sequence and then applies the same gates again, so
+// a defect that exists only once a form is filled, chosen or in error is caught by
+// the same instrument. Default spec: <dir>/states.json when it exists.
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import http from 'node:http';
@@ -32,6 +37,75 @@ function hashSource(root) {
   const files = Object.fromEntries(sourceFiles(root).map((f) => [f, sha256(fs.readFileSync(path.join(root, f)))]));
   const sha = sha256(Object.entries(files).map(([f, h]) => `${h}  ${f}\n`).join(''));
   return { sha256: sha, files };
+}
+
+// A state is data, not code: one of three ways to name an element, and an allowlisted verb.
+// Anything else is a spec error (exit 2), not a silently skipped step.
+const ACTIONS = {
+  fill: (loc, a) => loc.fill(String(a.value)),
+  click: (loc) => loc.click(),
+  check: (loc) => loc.check(),
+  uncheck: (loc) => loc.uncheck(),
+  focus: (loc) => loc.focus(),
+  hover: (loc) => loc.hover(),
+  press: (loc, a) => loc.press(String(a.key)),
+  waitFor: (loc) => loc.waitFor({ state: 'visible' }),
+};
+
+function specError(msg) { const e = new Error(`states spec: ${msg}`); e.specError = true; return e; }
+
+export function parseStates(raw, from = 'states.json') {
+  let doc;
+  try { doc = JSON.parse(raw); } catch (e) { throw specError(`${from} is not valid JSON: ${e.message}`); }
+  const list = Array.isArray(doc) ? doc : doc.states;
+  if (!Array.isArray(list)) throw specError(`${from} must be an array of states, or {"states": [...]}`);
+  const names = new Set();
+  return list.map((s, i) => {
+    const at = `${from} state ${s?.name ?? `#${i + 1}`}`;
+    if (!s || typeof s.name !== 'string' || !/^[a-z0-9][a-z0-9-]*$/i.test(s.name)) throw specError(`${at}: needs a name matching [a-z0-9-]`);
+    if (names.has(s.name)) throw specError(`${at}: duplicate name`);
+    names.add(s.name);
+    if (!Array.isArray(s.actions) || !s.actions.length) throw specError(`${at}: needs a non-empty actions array`);
+    for (const a of s.actions) {
+      const verbs = Object.keys(ACTIONS).filter((v) => v in a);
+      if (verbs.length !== 1) throw specError(`${at}: each action needs exactly one of ${Object.keys(ACTIONS).join(', ')}, got ${JSON.stringify(a)}`);
+      const t = a[verbs[0]];
+      const ways = ['label', 'role', 'selector', 'text'].filter((k) => t && k in t);
+      if (ways.length !== 1) throw specError(`${at}: target needs exactly one of label, role, selector, text, got ${JSON.stringify(t)}`);
+      if ('role' in t && typeof t.name !== 'string') throw specError(`${at}: a role target needs an accessible name`);
+      if (verbs[0] === 'fill' && a.value === undefined) throw specError(`${at}: fill needs a value`);
+      if (verbs[0] === 'press' && a.key === undefined) throw specError(`${at}: press needs a key`);
+    }
+    return { name: s.name, description: s.description ?? '', actions: s.actions };
+  });
+}
+
+function locate(page, t) {
+  if (t.label !== undefined) return page.getByLabel(t.label, { exact: t.exact ?? false });
+  if (t.role !== undefined) return page.getByRole(t.role, { name: t.name, exact: t.exact ?? false });
+  if (t.text !== undefined) return page.getByText(t.text, { exact: t.exact ?? false });
+  return page.locator(t.selector);
+}
+
+async function applyActions(page, state) {
+  for (const a of state.actions) {
+    const verb = Object.keys(ACTIONS).find((v) => v in a);
+    try {
+      await ACTIONS[verb](locate(page, a[verb]).first(), a);
+    } catch (e) {
+      throw specError(`state ${state.name}: ${verb} ${JSON.stringify(a[verb])} failed: ${e.message.split('\n')[0]}`);
+    }
+  }
+}
+
+function loadStates(root, statesOpt) {
+  if (statesOpt === false) return { states: [], specFile: null };
+  const file = statesOpt ? path.resolve(statesOpt) : path.join(root, 'states.json');
+  if (!fs.existsSync(file)) {
+    if (statesOpt) throw specError(`${file} does not exist`);
+    return { states: [], specFile: null };
+  }
+  return { states: parseStates(fs.readFileSync(file, 'utf8'), path.basename(file)), specFile: file };
 }
 
 function serve(root) {
@@ -163,17 +237,65 @@ async function checkFonts(page, info) {
   return { stacks: [...byStack.values()], fontFaces: faces };
 }
 
-async function captureViewport(browser, url, vp, dir) {
+// One loaded page with its own recorders. A state gets a fresh one, so its console,
+// requests and errors are its own and cannot be inherited from the at-rest pass.
+async function openPage(browser, url, vp) {
   const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1, reducedMotion: 'reduce' });
   const page = await ctx.newPage();
-  const consoleLog = [], pageErrors = [], failedRequests = [];
-  page.on('console', (m) => consoleLog.push({ type: m.type(), text: m.text(), location: m.location().url }));
-  page.on('pageerror', (e) => pageErrors.push({ message: e.message, stack: e.stack }));
-  page.on('requestfailed', (r) => failedRequests.some((f) => f.url === r.url()) || failedRequests.push({ url: r.url(), failure: r.failure()?.errorText }));
-  page.on('response', (r) => { if (r.status() >= 400) failedRequests.push({ url: r.url(), status: r.status() }); });
+  const rec = { consoleLog: [], pageErrors: [], failedRequests: [] };
+  page.on('console', (m) => rec.consoleLog.push({ type: m.type(), text: m.text(), location: m.location().url }));
+  page.on('pageerror', (e) => rec.pageErrors.push({ message: e.message, stack: e.stack }));
+  page.on('requestfailed', (r) => rec.failedRequests.some((f) => f.url === r.url()) || rec.failedRequests.push({ url: r.url(), failure: r.failure()?.errorText }));
+  page.on('response', (r) => { if (r.status() >= 400) rec.failedRequests.push({ url: r.url(), status: r.status() }); });
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForLoadState('networkidle');
   await page.evaluate(() => document.fonts.ready);
+  return { ctx, page, rec };
+}
+
+// The gates, in one place, so a state is judged by exactly the same rules as the page at rest.
+function gateFindings({ w, state, rec, violations, info, fonts }) {
+  const L = info.layout;
+  const tag = (f) => (state ? { ...f, state } : f);
+  return [
+    ...rec.consoleLog.filter((m) => m.type === 'error').map((m) => tag({ check: 'console-error', gate: true, width: w, detail: m.text })),
+    ...rec.pageErrors.map((e) => tag({ check: 'page-error', gate: true, width: w, detail: e.message })),
+    ...rec.failedRequests.map((r) => tag({ check: 'failed-request', gate: true, width: w, detail: `${r.status ?? r.failure} ${r.url}` })),
+    ...violations.map((v) => tag({ check: 'axe', gate: ['serious', 'critical'].includes(v.impact), width: w, rule: v.id, impact: v.impact, detail: `${v.help} (${v.targets.length})` })),
+    ...(L.scrollWidth > L.viewportWidth ? [tag({ check: 'overflow-x', gate: true, width: w, detail: `scrollWidth ${L.scrollWidth} > ${L.viewportWidth}` })] : []),
+    ...L.edgeOverflow.map((o) => tag({ check: `overflow-${o.side}`, gate: true, width: w, element: o.element, detail: `left ${o.left}, right ${o.right}` })),
+    ...L.textOverflow.map((o) => tag({ check: 'text-overflow', gate: false, width: w, element: o.element, detail: `${o.mode} dx ${o.dx} dy ${o.dy}` })),
+    ...fonts.stacks.filter((s) => s.failing.length).map((s) => tag({ check: 'font-fallback', gate: true, width: w, family: s.requested.join(', '), detail: `rendered ${Object.keys(s.rendered).join(', ')} in ${s.failing.length} element(s)` })),
+  ];
+}
+
+const axeFindings = (axe) => axe.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, targets: v.nodes.map((n) => n.target.join(' ')) }));
+
+// Drive one declared state and judge it. Screenshot first, then observe, as at rest.
+async function captureState(browser, url, vp, dir, state) {
+  const { ctx, page, rec } = await openPage(browser, url, vp);
+  try {
+    await applyActions(page, state);
+    await page.evaluate(() => document.fonts.ready);
+    const shot = path.join(dir, 'states', `${state.name}.png`);
+    fs.mkdirSync(path.dirname(shot), { recursive: true });
+    await page.screenshot({ animations: 'disabled', fullPage: true, path: shot });
+    const violations = axeFindings(await new AxeBuilder({ page }).analyze());
+    const info = await page.evaluate(inspectPage);
+    const fonts = await checkFonts(page, info);
+    return {
+      state: { name: state.name, description: state.description, screenshot: `states/${state.name}.png`,
+        layout: info.layout, axe: violations, console: rec },
+      findings: gateFindings({ w: vp.width, state: state.name, rec, violations, info, fonts }),
+    };
+  } finally {
+    await ctx.close();
+  }
+}
+
+async function captureViewport(browser, url, vp, dir, states = []) {
+  const { ctx, page, rec } = await openPage(browser, url, vp);
+  const { consoleLog, pageErrors, failedRequests } = rec;
 
   const shot = { animations: 'disabled', fullPage: true };
   await page.screenshot({ ...shot, path: path.join(dir, 'full.png') });
@@ -191,7 +313,7 @@ async function captureViewport(browser, url, vp, dir) {
   await ctx.close();
 
   const write = (name, data) => fs.writeFileSync(path.join(dir, name), typeof data === 'string' ? data : JSON.stringify(data, null, 2) + '\n');
-  const violations = axe.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, targets: v.nodes.map((n) => n.target.join(' ')) }));
+  const violations = axeFindings(axe);
   write('console.json', { console: consoleLog, pageErrors, failedRequests });
   write('axe.json', { violations, incomplete: axe.incomplete.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length })) });
   write('aria.yml', aria + '\n');
@@ -199,23 +321,25 @@ async function captureViewport(browser, url, vp, dir) {
   write('fonts.json', fonts);
   write('metrics.json', info.metrics);
 
-  const w = vp.width, L = info.layout;
-  const findings = [
-    ...consoleLog.filter((m) => m.type === 'error').map((m) => ({ check: 'console-error', gate: true, width: w, detail: m.text })),
-    ...pageErrors.map((e) => ({ check: 'page-error', gate: true, width: w, detail: e.message })),
-    ...failedRequests.map((r) => ({ check: 'failed-request', gate: true, width: w, detail: `${r.status ?? r.failure} ${r.url}` })),
-    ...violations.map((v) => ({ check: 'axe', gate: ['serious', 'critical'].includes(v.impact), width: w, rule: v.id, impact: v.impact, detail: `${v.help} (${v.targets.length})` })),
-    ...(L.scrollWidth > L.viewportWidth ? [{ check: 'overflow-x', gate: true, width: w, detail: `scrollWidth ${L.scrollWidth} > ${L.viewportWidth}` }] : []),
-    ...L.edgeOverflow.map((o) => ({ check: `overflow-${o.side}`, gate: true, width: w, element: o.element, detail: `left ${o.left}, right ${o.right}` })),
-    ...L.textOverflow.map((o) => ({ check: 'text-overflow', gate: false, width: w, element: o.element, detail: `${o.mode} dx ${o.dx} dy ${o.dy}` })),
-    ...fonts.stacks.filter((s) => s.failing.length).map((s) => ({ check: 'font-fallback', gate: true, width: w, family: s.requested.join(', '), detail: `rendered ${Object.keys(s.rendered).join(', ')} in ${s.failing.length} element(s)` })),
-  ];
-  return { width: w, height: vp.height, pageHeight: height, tiles, tilesTruncated: height > vp.height * MAX_TILES, findings };
+  const w = vp.width;
+  const findings = gateFindings({ w, rec, violations, info, fonts });
+
+  const captured = [];
+  for (const s of states) {
+    const r = await captureState(browser, url, vp, dir, s);
+    captured.push(r.state);
+    findings.push(...r.findings);
+  }
+  if (states.length) write('states.json', captured);
+
+  return { width: w, height: vp.height, pageHeight: height, tiles, tilesTruncated: height > vp.height * MAX_TILES,
+    states: captured.map(({ name, screenshot }) => ({ name, screenshot })), findings };
 }
 
-export async function capture(srcDir, { page = '', out = 'evidence' } = {}) {
+export async function capture(srcDir, { page = '', out = 'evidence', states: statesOpt } = {}) {
   const t0 = Date.now();
   const root = fs.realpathSync(srcDir);
+  const { states, specFile } = loadStates(root, statesOpt);
   const source = hashSource(root);
   const runDir = claimRunDir(path.resolve(out), source.sha256.slice(0, 8));
   const server = await serve(root);
@@ -228,13 +352,14 @@ export async function capture(srcDir, { page = '', out = 'evidence' } = {}) {
     for (const vp of VIEWPORTS) {
       const dir = path.join(runDir, String(vp.width));
       fs.mkdirSync(dir);
-      viewports.push(await captureViewport(browser, url, vp, dir));
+      viewports.push(await captureViewport(browser, url, vp, dir, states));
     }
     const findings = viewports.flatMap((v) => v.findings);
     const pkg = (n) => JSON.parse(fs.readFileSync(fileURLToPath(import.meta.resolve(`${n}/package.json`)))).version;
     const summary = {
       run: path.basename(runDir), created: new Date().toISOString(), pass: !findings.some((f) => f.gate),
       source: { dir: root, page: `/${page}`, ...source },
+      states: { spec: specFile ? path.relative(root, specFile) || path.basename(specFile) : null, names: states.map((s) => s.name) },
       browser: { version: browser.version(), launch: exe ? `executablePath ${exe}` : 'channel chrome' },
       tools: { node: process.version, playwright: pkg('playwright'), axe: pkg('axe-core') },
       viewports: viewports.map(({ findings, ...v }) => v), findings, durationMs: Date.now() - t0,
@@ -256,14 +381,17 @@ if (process.argv[1] && fs.realpathSync(process.argv[1]) === fileURLToPath(import
   const args = process.argv.slice(2);
   const opt = (name) => { const i = args.indexOf(name); return i < 0 ? undefined : args.splice(i, 2)[1]; };
   const page = opt('--page'), out = opt('--out');
-  if (args.length !== 1) { console.error('usage: capture <dir> [--page index.html] [--out evidence]'); process.exit(2); }
+  const noStates = args.includes('--no-states') && args.splice(args.indexOf('--no-states'), 1);
+  const statesOpt = noStates ? false : opt('--states');
+  if (args.length !== 1) { console.error('usage: capture <dir> [--page index.html] [--out evidence] [--states file|--no-states]'); process.exit(2); }
   try {
-    const { runDir, summary } = await capture(args[0], { page, out });
-    for (const f of summary.findings) console.log(`${f.gate ? 'FAIL' : 'note'} ${f.width} ${f.check}${f.rule ? ` ${f.rule}` : ''}${f.element ? ` ${f.element}` : ''}${f.family ? ` [${f.family}]` : ''}: ${f.detail}`);
-    for (const v of summary.viewports) console.log(`tiles ${v.width}: ${v.tiles.length}${v.tilesTruncated ? ' (truncated)' : ''}, page height ${v.pageHeight}`);
+    const { runDir, summary } = await capture(args[0], { page, out, states: statesOpt });
+    for (const f of summary.findings) console.log(`${f.gate ? 'FAIL' : 'note'} ${f.width}${f.state ? ` [${f.state}]` : ''} ${f.check}${f.rule ? ` ${f.rule}` : ''}${f.element ? ` ${f.element}` : ''}${f.family ? ` [${f.family}]` : ''}: ${f.detail}`);
+    for (const v of summary.viewports) console.log(`tiles ${v.width}: ${v.tiles.length}${v.tilesTruncated ? ' (truncated)' : ''}, page height ${v.pageHeight}${v.states?.length ? `, states ${v.states.map((s) => s.name).join(', ')}` : ''}`);
     console.log(`${summary.pass ? 'PASS' : 'FAIL'} ${runDir} (${summary.durationMs}ms)`);
     process.exit(summary.pass ? 0 : 1);
   } catch (e) {
-    console.error(e.stack ?? e); process.exit(2);
+    // A malformed or unrunnable state spec is a usage error: say what is wrong, not where it threw.
+    console.error(e.specError ? `error: ${e.message}` : e.stack ?? e); process.exit(2);
   }
 }

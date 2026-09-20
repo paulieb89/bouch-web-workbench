@@ -18,6 +18,13 @@ td{text-align:right}
 a{color:var(--accent)}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1rem;font-size:.9rem;font-family:system-ui,"Workbench Absent Family",sans-serif}
+form{margin:.5rem 0 0}
+label{display:block;margin-bottom:.35rem}
+input{font:inherit;padding:.5rem;border:1px solid var(--rule);background:#fff;color:var(--ink);width:8rem;box-sizing:border-box}
+input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button{font:inherit;padding:.55rem 1rem;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#answer{margin:.75rem 0 0;max-width:100%}
 </style></head><body><main>
 <h1>Harbour Lane Bakery</h1>
 <p>Sourdough, rye and seasonal bakes from a wood-fired oven on Harbour Lane. We open at seven and close when the bread runs out.</p>
@@ -43,6 +50,21 @@ footer{border-top:1px solid var(--rule);margin-top:3rem;padding-top:1rem;font-si
 <p>12 Harbour Lane, next to the lifeboat station. Card and cash both welcome. <a href="#order">Order ahead</a> for whole tarts and large orders.</p>
 <h2 id="order">Ordering ahead</h2>
 <p>Call the shop the day before, before noon. We will have your order boxed and waiting by the till.</p>
+<!-- Interactive state fixture: filling and submitting reveals #answer. The revealed state must
+     also capture with no findings, so a state pass that invents findings is caught here. -->
+<form id="loaves">
+<label for="qty">How many loaves?</label>
+<input id="qty" name="qty" type="text" inputmode="numeric" autocomplete="off">
+<button type="submit">Reserve</button>
+</form>
+<p id="answer" role="status"></p>
 </main>
 <footer><p style="max-width:40rem;margin:0 auto;padding:0 1.25rem">Harbour Lane Bakery, 12 Harbour Lane.</p></footer>
+<script>
+document.getElementById('loaves').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const n = document.getElementById('qty').value.trim();
+  document.getElementById('answer').textContent = n ? `Reserved ${n} loaf/loaves for tomorrow.` : 'Tell us how many loaves.';
+});
+</script>
 </body></html>

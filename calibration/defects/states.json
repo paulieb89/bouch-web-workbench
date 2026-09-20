@@ -1,0 +1,13 @@
+{
+  "states": [
+    {
+      "name": "error",
+      "description": "Submitting the signup form reveals a non-wrapping error banner and logs a console error",
+      "actions": [
+        { "fill": { "label": "Work email" }, "value": "not-an-email" },
+        { "click": { "role": "button", "name": "Request a demo" } },
+        { "waitFor": { "selector": "p.err" } }
+      ]
+    }
+  ]
+}
