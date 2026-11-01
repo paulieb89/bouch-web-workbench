@@ -80,3 +80,11 @@ local page being served. Pixels depend on the browser build and the installed fo
 records what rendered. `scripts/reproduce.sh [revision]` reproduces the qualification from committed source in the
 pinned official Playwright container; what differs there is in
 [docs/cross-environment.md](docs/cross-environment.md).
+
+## Visual production track
+
+For work where visual quality is in scope, follow [docs/visual-production.md](docs/visual-production.md)
+and copy [task/visual-acceptance-template.md](task/visual-acceptance-template.md) into the task.
+This is documentation and a template layered on the v0.2 interaction-state Workbench; it is not
+a new browser instrument, adds no gate, and leaves `capture.mjs`, `calibrate.mjs` and the Ashcombe
+task unchanged.

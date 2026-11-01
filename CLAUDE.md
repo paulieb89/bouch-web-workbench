@@ -31,6 +31,22 @@ Keep these separate when reporting: runtime evidence (captures, test runs), dete
 checks (gates, tests), your own visual critique, and human judgement. Design metrics are
 diagnostic, not targets. A human decides final design quality.
 
+## Visual production contract
+
+[docs/visual-production.md](docs/visual-production.md) is optional, but required when
+visual or design quality is in scope. [task/visual-acceptance-template.md](task/visual-acceptance-template.md)
+is its copyable checklist. A task that does not set visual quality in scope, such as the
+current Ashcombe task, is unchanged by it.
+
+- Keep content authority (brief, approved copy), machine gates, visual critique and human
+  judgement separate, in the work and in the report. One does not stand in for another.
+- Declare states in `states.json` for meaningful interactive UI, and capture them. Do not
+  claim a state that was only coded.
+- Record fonts and assets that are not final as provisional, with source and licence. Do not
+  invent facts, figures, testimonials, customers or claims to fill a design.
+- The Workbench is the evidence instrument, not a design generator. Passing it does not make
+  a design good; a human decides that.
+
 ## The instrument
 
 `capture.mjs`, `calibrate.mjs` and `calibration/` were qualified at tag `v0-capture-qualified`
